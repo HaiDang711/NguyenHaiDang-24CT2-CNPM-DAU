@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập quản trị — DangBooking</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-login-wrap">
+  <div class="admin-login-card">
+    <div class="logo"><span class="mark"></span> DangBooking Admin</div>
+    <div class="tag">Dành cho quản trị viên & nhân viên</div>
+    <form id="login-form">
+      <div class="field-block"><label>Tên đăng nhập</label><input type="text" id="username" required autofocus></div>
+      <div class="field-block"><label>Mật khẩu</label><input type="password" id="password" required></div>
+      <button class="submit-btn" type="submit">Đăng nhập</button>
+      <div class="form-error" id="err"></div>
+    </form>
+    <div class="hint-note">Tài khoản admin mặc định: <b>admin</b> / <b>admin123</b> — hãy đổi mật khẩu sau khi đăng nhập lần đầu (xem README).</div>
+  </div>
+</div>
+<script src="js/admin-common.js"></script>
+<script>
+  document.getElementById('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const errEl = document.getElementById('err');
+    errEl.style.display = 'none';
+    try {
+      await adminPost('login.php', {
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value
+      });
+      location.href = 'dashboard.html';
+    } catch(err){
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>
