@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản lý Tour — ViVu Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+<style>
+  .tour-block{ background:var(--white); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin-bottom:16px; }
+  .tour-block .ttitle{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .tour-block h3{ font-size:16px; }
+  .tour-block .place{ font-size:12.5px; color:var(--ink-600); }
+  .package-line{ display:flex; justify-content:space-between; font-size:13.5px; padding:8px 0; border-top:1px dashed var(--line); }
+  .add-package-btn{ margin-top:10px; font-size:13px; font-weight:700; color:var(--lagoon-500); }
+</style>
+</head>
+<body>
+<div class="admin-shell" id="admin-shell">
+  <div class="admin-main">
+    <div class="page-head">
+      <div><h1>Quản lý Tour</h1><p>Thêm tour du lịch mới hoặc thêm gói cho tour hiện có</p></div>
+      <button class="btn btn-primary" id="open-tour">+ Thêm tour</button>
+    </div>
+    <div id="tour-list">Đang tải…</div>
+  </div>
+</div>
+
+<div class="overlay" id="tour-overlay">
+  <div class="modal">
+    <button class="modal-close-x" id="close-tour">✕</button>
+    <h2>Thêm tour mới</h2>
+    <form id="tour-form">
+      <div class="field-block"><label>Tên tour</label><input type="text" id="t-name" required></div>
+      <div class="field-block"><label>Địa điểm (vd: Đà Nẵng)</label><input type="text" id="t-place" required></div>
+      <div class="field-block"><label>Địa chỉ / điểm tập trung</label><input type="text" id="t-address"></div>
+      <div class="field-block"><label>Mô tả / lịch trình tổng quan</label><input type="text" id="t-desc"></div>
+      <div class="field-block"><label>Giá từ (VNĐ/khách)</label><input type="number" id="t-price" required></div>
+      <div class="field-block"><label>Điểm nổi bật (phân cách bằng dấu phẩy)</label><input type="text" id="t-highlights" placeholder="Hướng dẫn viên,Xe đưa đón,..."></div>
+      <button class="submit-btn" type="submit">Thêm tour</button>
+      <div class="form-error" id="t-err"></div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="package-overlay">
+  <div class="modal">
+    <button class="modal-close-x" id="close-package">✕</button>
+    <h2>Thêm gói tour</h2>
+    <form id="package-form">
+      <input type="hidden" id="p-tour-id">
+      <div class="field-block"><label>Tên gói tour</label><input type="text" id="p-name" required></div>
+      <div class="field-block"><label>Mô tả (vd: 3 ngày 2 đêm, xe + khách sạn 4 sao)</label><input type="text" id="p-desc"></div>
+      <div class="field-block"><label>Giá / khách (VNĐ)</label><input type="number" id="p-price" required></div>
+      <button class="submit-btn" type="submit">Thêm gói</button>
+      <div class="form-error" id="p-err"></div>
+    </form>
+  </div>
+</div>
+
+<script src="js/admin-common.js"></script>
+<script>
+async function loadTours(){
+  const list = document.getElementById('tour-list');
+  try {
+    const data = await adminGet('tours.php');
+    list.innerHTML = data.tours.map(t => `
+      <div class="tour-block">
+        <div class="ttitle">
+          <div><h3>${t.name}</h3><div class="place">${t.place} · Giá từ ${moneyVN(t.price_from)}</div></div>
+        </div>
+        ${t.packages.map(p => `<div class="package-line"><span>${p.name} — ${p.description || ''}</span><b>${moneyVN(p.price)}</b></div>`).join('') || '<div class="package-line" style="border-top:none; color:var(--ink-600);">Chưa có gói nào</div>'}
+        <button class="add-package-btn" data-tour="${t.id}">+ Thêm gói tour</button>
+      </div>`).join('');
+
+    list.querySelectorAll('.add-package-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('p-tour-id').value = btn.dataset.tour;
+        document.getElementById('package-overlay').classList.add('open');
+      });
+    });
+  } catch(e){ list.innerHTML = `<p style="color:#C4402E">${e.message}</p>`; }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const me = await bootAdminPage('tours');
+  if (!me) return;
+  loadTours();
+
+  const tourOverlay = document.getElementById('tour-overlay');
+  document.getElementById('open-tour').addEventListener('click', () => tourOverlay.classList.add('open'));
+  document.getElementById('close-tour').addEventListener('click', () => tourOverlay.classList.remove('open'));
+  tourOverlay.addEventListener('click', e => { if(e.target === tourOverlay) tourOverlay.classList.remove('open'); });
+
+  document.getElementById('tour-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const errEl = document.getElementById('t-err');
+    errEl.style.display = 'none';
+    try {
+      await adminPost('tours.php', {
+        entity: 'tour',
+        name: document.getElementById('t-name').value.trim(),
+        place: document.getElementById('t-place').value.trim(),
+        address: document.getElementById('t-address').value.trim(),
+        description: document.getElementById('t-desc').value.trim(),
+        price_from: document.getElementById('t-price').value,
+        highlights: document.getElementById('t-highlights').value.trim()
+      });
+      tourOverlay.classList.remove('open');
+      e.target.reset();
+      toast('Đã thêm tour mới.');
+      loadTours();
+    } catch(err){ errEl.textContent = err.message; errEl.style.display = 'block'; }
+  });
+
+  const packageOverlay = document.getElementById('package-overlay');
+  document.getElementById('close-package').addEventListener('click', () => packageOverlay.classList.remove('open'));
+  packageOverlay.addEventListener('click', e => { if(e.target === packageOverlay) packageOverlay.classList.remove('open'); });
+
+  document.getElementById('package-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const errEl = document.getElementById('p-err');
+    errEl.style.display = 'none';
+    try {
+      await adminPost('tours.php', {
+        entity: 'package',
+        tour_id: document.getElementById('p-tour-id').value,
+        name: document.getElementById('p-name').value.trim(),
+        description: document.getElementById('p-desc').value.trim(),
+        price: document.getElementById('p-price').value
+      });
+      packageOverlay.classList.remove('open');
+      e.target.reset();
+      toast('Đã thêm gói tour.');
+      loadTours();
+    } catch(err){ errEl.textContent = err.message; errEl.style.display = 'block'; }
+  });
+});
+</script>
+</body>
+</html>
