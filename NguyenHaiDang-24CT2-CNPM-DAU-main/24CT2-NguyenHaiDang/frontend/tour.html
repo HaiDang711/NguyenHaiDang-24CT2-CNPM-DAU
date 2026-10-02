@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chi tiết tour — DangBooking</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .review-item{ border-top:1px solid var(--line); padding:14px 0; }
+  .review-item .stars{ color:var(--sun-500); font-weight:700; }
+  .review-item .who{ font-size:12.5px; color:var(--ink-600); margin-top:2px; }
+  .review-item .comment{ font-size:14px; margin-top:6px; }
+  .review-summary{ font-size:14px; color:var(--ink-600); margin-bottom:6px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="logo"><span class="mark"></span> DangBooking</div>
+    <a class="back-link" href="index.html" style="color:#CDEAE7; margin:0;">← Trang chủ</a>
+  </div>
+</header>
+<div class="tour-hero" id="tour-hero-img">
+  <div class="overlay-grad"></div>
+  <div class="tour-hero-info"><div class="container">
+    <h1 id="tour-name">Đang tải…</h1>
+    <div class="meta"><span id="tour-rating"></span><span id="tour-address"></span></div>
+  </div></div>
+</div>
+<div class="container">
+  <div class="tour-body">
+    <div class="tour-main">
+      <h2>Giới thiệu</h2>
+      <p class="desc" id="tour-desc"></p>
+      <h2>Điểm nổi bật</h2>
+      <div class="amenity-grid" id="tour-highlights"></div>
+      <h2>Chọn gói tour</h2>
+      <div id="package-list"></div>
+
+      <h2>Đánh giá từ khách hàng</h2>
+      <div class="review-summary" id="review-summary">Chưa có đánh giá nào.</div>
+      <div id="review-list"></div>
+    </div>
+    <div class="side-card">
+      <h3>Tóm tắt tìm kiếm</h3>
+      <div class="side-row"><span>Khởi hành</span><span id="side-departure">Chọn ngày khi đặt</span></div>
+      <div class="side-row total"><span>Giá từ</span><span id="side-price">—</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="login-overlay">
+  <div class="modal">
+    <button class="modal-close" id="close-login">✕</button>
+    <h2>Đăng nhập</h2>
+    <div class="sub">Đăng nhập để tiếp tục đặt tour.</div>
+    <form id="login-form">
+      <div class="field-block"><label>Số điện thoại / email / tài khoản quản trị</label><input type="text" id="login-id" required></div>
+      <div class="field-block"><label>Mật khẩu</label><input type="password" id="login-pass" required>
+        <div class="form-error" id="login-error"></div>
+      </div>
+      <button class="submit-btn gold" type="submit">Đăng nhập</button>
+    </form>
+    <div class="modal-foot">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></div>
+  </div>
+</div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-text"></span></div>
+
+<script src="js/api.js"></script>
+<script src="js/tour.js"></script>
+</body>
+</html>

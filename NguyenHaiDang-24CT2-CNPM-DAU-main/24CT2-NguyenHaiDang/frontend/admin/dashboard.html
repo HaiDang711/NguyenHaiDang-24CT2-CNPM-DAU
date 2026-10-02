@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tổng quan — DangBooking Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-shell" id="admin-shell">
+  <div class="admin-main">
+    <div class="page-head">
+      <div><h1>Tổng quan</h1><p>Số liệu nhanh về hoạt động của hệ thống</p></div>
+    </div>
+    <div class="stat-grid" id="stat-grid"></div>
+    <div id="revenue-section"></div>
+  </div>
+</div>
+<script src="js/admin-common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const me = await bootAdminPage('dashboard');
+  if (!me) return;
+
+  const grid = document.getElementById('stat-grid');
+  const revSection = document.getElementById('revenue-section');
+
+  if (me.role === 'admin') {
+    // Admin: xem đủ thống kê + doanh thu tổng (API riêng chỉ admin gọi được)
+    try {
+      const s = await adminGet('stats.php');
+      grid.innerHTML = `
+        <div class="stat-card"><div class="label">Doanh thu (đơn đã duyệt)</div><div class="value">${moneyVN(s.total_revenue)}</div></div>
+        <div class="stat-card warn"><div class="label">Đơn chờ duyệt</div><div class="value">${s.pending_count}</div></div>
+        <div class="stat-card"><div class="label">Đơn đã duyệt</div><div class="value">${s.confirmed_count}</div></div>
+        <div class="stat-card bad"><div class="label">Đơn đã hủy</div><div class="value">${s.cancelled_count}</div></div>
+        <div class="stat-card"><div class="label">Người dùng</div><div class="value">${s.user_count}</div></div>
+        <div class="stat-card"><div class="label">Tài khoản quản trị</div><div class="value">${s.staff_count}</div></div>`;
+      revSection.innerHTML = `
+        <div class="page-head"><div><h1 style="font-size:20px;">Tour doanh thu cao nhất</h1></div></div>
+        <div class="table-card"><table>
+          <thead><tr><th>Tour</th><th>Số đơn đã duyệt</th><th>Doanh thu</th></tr></thead>
+          <tbody>${s.top_tours.map(h => `<tr><td>${h.name}</td><td>${h.bookings}</td><td>${moneyVN(h.revenue)}</td></tr>`).join('') || '<tr><td colspan="3">Chưa có dữ liệu</td></tr>'}</tbody>
+        </table></div>`;
+    } catch(e){ toast(e.message); }
+  } else {
+    // Nhân viên: không thấy doanh thu tổng, chỉ thấy số lượng đơn cần xử lý
+    try {
+      const b = await adminGet('bookings.php');
+      const pending = b.bookings.filter(x => x.status === 'pending').length;
+      const confirmed = b.bookings.filter(x => x.status === 'confirmed').length;
+      const u = await adminGet('customers.php');
+      grid.innerHTML = `
+        <div class="stat-card warn"><div class="label">Đơn chờ duyệt</div><div class="value">${pending}</div></div>
+        <div class="stat-card"><div class="label">Đơn đã duyệt</div><div class="value">${confirmed}</div></div>
+        <div class="stat-card"><div class="label">Tổng người dùng</div><div class="value">${u.users.length}</div></div>`;
+      revSection.innerHTML = `<p style="color:var(--ink-600); font-size:14px;">Báo cáo doanh thu tổng chỉ dành cho quản trị viên (admin).</p>`;
+    } catch(e){ toast(e.message); }
+  }
+});
+</script>
+</body>
+</html>
