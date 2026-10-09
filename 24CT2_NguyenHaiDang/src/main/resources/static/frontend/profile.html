@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Trang cá nhân - DangBooking</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .profile-page {
+      min-height: 100vh;
+      background: #f6f7f8;
+      padding: 40px 20px;
+    }
+
+    .profile-container {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .profile-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .profile-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+
+    .profile-user {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #14A098;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 35px;
+      flex-shrink: 0;
+    }
+
+    .profile-name {
+      margin: 0 0 5px;
+      font-size: 26px;
+    }
+
+    .profile-info {
+      margin-top: 25px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .info-box {
+      padding: 15px;
+      background: #f7f8f9;
+      border-radius: 10px;
+    }
+
+    .info-label {
+      color: #777;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .booking-item {
+      padding: 20px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    .booking-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .booking-title {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .booking-code {
+      font-weight: bold;
+      color: #14A098;
+    }
+
+    .booking-details {
+      margin-top: 15px;
+      color: #555;
+      display: grid;
+      gap: 7px;
+    }
+
+    .booking-price {
+      font-weight: bold;
+      color: #C4402E;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 20px;
+      background: #e7f7f5;
+      color: #0e7772;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .empty-booking {
+      padding: 35px;
+      text-align: center;
+      color: #777;
+    }
+
+    .btn-danger {
+      border: none;
+      background: #C4402E;
+      color: white;
+      padding: 11px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-back {
+      border: none;
+      background: #14A098;
+      color: white;
+      padding: 11px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      .profile-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .profile-user {
+        align-items: flex-start;
+      }
+    }
+
+    .btn-mini-outline, .btn-mini-solid {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-mini-outline {
+      background: transparent;
+      border: 1.5px solid #E4E0D4;
+      color: #10201F;
+    }
+    .btn-mini-solid {
+      background: #F2A93B;
+      color: #10201F;
+    }
+    .btn-mini-solid:hover { background: #DE9226; }
+
+    /* ===== Vé điện tử & thanh toán ===== */
+    .ticket-locked {
+      margin-top: 14px; padding: 14px 16px; border-radius: 10px;
+      background: #FFF6E5; color: #8A5A00; font-size: 14px; line-height: 1.5;
+      border: 1px dashed #F2A93B;
+    }
+    .ticket {
+      margin-top: 16px; display: flex; border-radius: 14px; overflow: hidden;
+      background: linear-gradient(135deg, #0E4749, #14A098); color: #fff;
+      box-shadow: 0 6px 18px rgba(14,71,73,.25);
+    }
+    .ticket-main { flex: 1; padding: 18px 20px; }
+    .ticket-brand { font-size: 11px; letter-spacing: 2px; opacity: .8; font-weight: 700; }
+    .ticket-title { font-size: 20px; font-weight: 800; margin: 6px 0 2px; }
+    .ticket-sub { opacity: .85; font-size: 13px; margin-bottom: 12px; }
+    .ticket-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+    .ticket-grid small { display: block; opacity: .7; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+    .ticket-grid b { font-size: 14px; }
+    .ticket-stub {
+      width: 180px; padding: 18px 14px; text-align: center; background: rgba(255,255,255,.12);
+      border-left: 2px dashed rgba(255,255,255,.55); display: flex; flex-direction: column;
+      justify-content: center; gap: 8px;
+    }
+    .ticket-code { font-weight: 800; font-size: 15px; word-break: break-all; }
+    .ticket-paid { display: inline-block; background: #F2A93B; color: #10201F; font-weight: 800;
+      font-size: 12px; padding: 4px 10px; border-radius: 20px; align-self: center; }
+    .ticket-barcode {
+      height: 44px; border-radius: 4px;
+      background: repeating-linear-gradient(90deg, #fff 0 2px, transparent 2px 4px, #fff 4px 5px, transparent 5px 9px, #fff 9px 12px, transparent 12px 14px);
+      opacity: .9;
+    }
+    .status.waiting { background: #FFF1D6; color: #8A5A00; }
+    .status.ticketed { background: #D9F4EE; color: #0B5F59; }
+    @media (max-width: 600px) {
+      .ticket { flex-direction: column; }
+      .ticket-stub { width: auto; border-left: none; border-top: 2px dashed rgba(255,255,255,.55); }
+    }
+
+    .pay-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 999;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .pay-modal {
+      background: #fff; border-radius: 16px; max-width: 380px; width: 100%;
+      padding: 22px; text-align: center; max-height: 95vh; overflow-y: auto;
+    }
+    .pay-amount-label { color: #666; font-size: 13px; }
+    .pay-amount { font-size: 30px; font-weight: 800; color: #C4402E; margin: 2px 0 12px; }
+    .pay-modal img { width: 100%; border-radius: 10px; border: 1px solid #eee; }
+    .pay-bank { text-align: left; font-size: 13px; background: #f7f8f9; border-radius: 10px; padding: 10px 12px; margin: 12px 0; line-height: 1.7; }
+    .pay-note { font-size: 11.5px; color: #777; margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+
+  <main class="profile-page">
+
+    <div class="profile-container">
+
+      <div class="profile-top">
+        <div>
+          <h1>Trang cá nhân</h1>
+          <p>Quản lý thông tin và lịch sử đặt tour của bạn</p>
+        </div>
+
+        <a href="index.html" class="btn-back">
+          ← Về trang chủ
+        </a>
+      </div>
+
+      <!-- THÔNG TIN NGƯỜI DÙNG -->
+      <section class="profile-card">
+
+        <div class="profile-user">
+
+          <div class="profile-avatar">
+            👤
+          </div>
+
+          <div>
+            <h2 class="profile-name" id="profile-name">
+              Đang tải...
+            </h2>
+
+            <div id="profile-email-short"></div>
+          </div>
+
+        </div>
+
+        <div class="profile-info">
+
+          <div class="info-box">
+            <div class="info-label">Họ và tên</div>
+            <div class="info-value" id="info-name">-</div>
+          </div>
+
+          <div class="info-box">
+            <div class="info-label">Số điện thoại</div>
+            <div class="info-value" id="info-phone">-</div>
+          </div>
+
+          <div class="info-box">
+            <div class="info-label">Email</div>
+            <div class="info-value" id="info-email">-</div>
+          </div>
+
+          <div class="info-box">
+            <div class="info-label">Ngày tạo tài khoản</div>
+            <div class="info-value" id="info-created">-</div>
+          </div>
+
+        </div>
+
+        <br>
+
+        <button id="logout-btn" class="btn-danger">
+          Đăng xuất
+        </button>
+
+      </section>
+
+
+      <!-- LỊCH SỬ ĐẶT PHÒNG -->
+      <section class="profile-card">
+
+        <h2>Lịch sử đặt tour</h2>
+
+        <div id="booking-list">
+          Đang tải lịch sử đặt tour...
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/profile.js"></script>
+
+</body>
+</html>

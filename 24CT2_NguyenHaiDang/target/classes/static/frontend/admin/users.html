@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Người dùng — DangBooking Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-shell" id="admin-shell">
+  <div class="admin-main">
+    <div class="page-head">
+      <div><h1>Người dùng</h1><p>Danh sách khách hàng đã đăng ký trên web</p></div>
+      <button class="btn btn-primary" id="open-create">+ Tạo tài khoản hộ khách</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Họ tên</th><th>Số điện thoại</th><th>Email</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
+        <tbody id="user-rows"><tr><td colspan="5">Đang tải…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="create-overlay">
+  <div class="modal">
+    <button class="modal-close-x" id="close-create">✕</button>
+    <h2>Tạo tài khoản hộ khách</h2>
+    <p style="color:var(--ink-600); font-size:13px; margin-bottom:16px;">Dùng khi khách đặt phòng qua điện thoại/trực tiếp, chưa tự đăng ký.</p>
+    <form id="create-form">
+      <div class="field-block"><label>Họ và tên</label><input type="text" id="c-name" required></div>
+      <div class="field-block"><label>Số điện thoại</label><input type="tel" id="c-phone" required></div>
+      <div class="field-block"><label>Email (không bắt buộc)</label><input type="email" id="c-email"></div>
+      <div class="field-block"><label>Mật khẩu tạm</label><input type="password" id="c-pass" required minlength="6"></div>
+      <button class="submit-btn" type="submit">Tạo tài khoản</button>
+      <div class="form-error" id="c-err"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Đặt lại mật khẩu hộ khách hàng (khi khách quên mật khẩu, gọi điện nhờ hỗ trợ) -->
+<div class="overlay" id="reset-overlay">
+  <div class="modal">
+    <button class="modal-close-x" id="close-reset">✕</button>
+    <h2>Đặt lại mật khẩu</h2>
+    <p style="color:var(--ink-600); font-size:13px; margin-bottom:16px;">Dành cho: <b id="reset-user-name"></b>. Mật khẩu mới sẽ có hiệu lực ngay, hãy đọc lại cho khách qua điện thoại.</p>
+    <form id="reset-form">
+      <input type="hidden" id="reset-user-id">
+      <div class="field-block"><label>Mật khẩu mới</label><input type="text" id="reset-pass" required minlength="6" placeholder="Tối thiểu 6 ký tự"></div>
+      <button class="submit-btn" type="submit">Xác nhận đặt lại</button>
+      <div class="form-error" id="reset-err"></div>
+    </form>
+  </div>
+</div>
+
+<script src="js/admin-common.js"></script>
+<script>
+let allUsers = [];
+
+async function loadUsers(){
+  const rows = document.getElementById('user-rows');
+  try {
+    const data = await adminGet('customers.php');
+    allUsers = data.users;
+    rows.innerHTML = allUsers.length ? allUsers.map(u => `
+      <tr>
+        <td>${u.full_name}</td><td>${u.phone}</td><td>${u.email || '—'}</td>
+        <td>${new Date(u.created_at).toLocaleDateString('vi-VN')}</td>
+        <td><button class="mini-btn approve" data-reset="${u.id}">Đặt lại mật khẩu</button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="5">Chưa có người dùng nào.</td></tr>';
+
+    rows.querySelectorAll('button[data-reset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const u = allUsers.find(x => String(x.id) === btn.dataset.reset);
+        document.getElementById('reset-user-id').value = u.id;
+        document.getElementById('reset-user-name').textContent = `${u.full_name} (${u.phone})`;
+        document.getElementById('reset-overlay').classList.add('open');
+      });
+    });
+  } catch(e){ rows.innerHTML = `<tr><td colspan="5" style="color:#C4402E">${e.message}</td></tr>`; }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const me = await bootAdminPage('users');
+  if (!me) return;
+  loadUsers();
+
+  const overlay = document.getElementById('create-overlay');
+  document.getElementById('open-create').addEventListener('click', () => overlay.classList.add('open'));
+  document.getElementById('close-create').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('open'); });
+
+  document.getElementById('create-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const errEl = document.getElementById('c-err');
+    errEl.style.display = 'none';
+    try {
+      await adminPost('customers.php', {
+        full_name: document.getElementById('c-name').value.trim(),
+        phone: document.getElementById('c-phone').value.trim(),
+        email: document.getElementById('c-email').value.trim(),
+        password: document.getElementById('c-pass').value
+      });
+      overlay.classList.remove('open');
+      e.target.reset();
+      toast('Đã tạo tài khoản cho khách.');
+      loadUsers();
+    } catch(err){ errEl.textContent = err.message; errEl.style.display = 'block'; }
+  });
+
+  const resetOverlay = document.getElementById('reset-overlay');
+  document.getElementById('close-reset').addEventListener('click', () => resetOverlay.classList.remove('open'));
+  resetOverlay.addEventListener('click', e => { if(e.target === resetOverlay) resetOverlay.classList.remove('open'); });
+
+  document.getElementById('reset-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const errEl = document.getElementById('reset-err');
+    errEl.style.display = 'none';
+    try {
+      const res = await adminPost('reset-password.php', {
+        user_id: document.getElementById('reset-user-id').value,
+        new_password: document.getElementById('reset-pass').value
+      });
+      resetOverlay.classList.remove('open');
+      e.target.reset();
+      toast(res.message);
+    } catch(err){ errEl.textContent = err.message; errEl.style.display = 'block'; }
+  });
+});
+</script>
+</body>
+</html>
