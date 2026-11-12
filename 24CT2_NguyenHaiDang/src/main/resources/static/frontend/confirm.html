@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đặt phòng thành công — DangBooking</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header><div class="nav"><div class="logo"><span class="mark"></span> DangBooking</div></div></header>
+<div class="confirm-wrap">
+  <div class="confirm-check">✓</div>
+  <h1>Đặt phòng thành công</h1>
+  <p>Yêu cầu đặt phòng của bạn đang <b>chờ nhân viên duyệt</b>. Chúng tôi sẽ liên hệ qua số điện thoại bạn đã cung cấp để xác nhận.</p>
+  <div class="confirm-code" id="confirm-code">—</div>
+  <div style="margin-top:30px;"><a class="btn btn-solid" href="index.html">Về trang chủ</a></div>
+</div>
+<script>
+  document.getElementById('confirm-code').textContent = new URLSearchParams(location.search).get('code') || '—';
+</script>
+</body>
+</html>
